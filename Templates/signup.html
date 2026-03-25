@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - OSINT Data Exposure Assessment v2.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent-color: #10b981;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--background-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .signup-container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .logo {
+            width: 180px;
+            display: block;
+            margin: 0 auto 30px;
+        }
+
+        h2 {
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+
+        .form-control:focus {
+            background-color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-control.is-valid {
+            border-color: var(--success-color);
+        }
+
+        .form-control.is-invalid {
+            border-color: var(--danger-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 15px;
+            width: 100%;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Password strength meter */
+        .password-strength {
+            height: 8px;
+            border-radius: 4px;
+            margin-top: 5px;
+            transition: all 0.3s ease;
+            background: #e9ecef;
+        }
+
+        .password-strength-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            width: 0%;
+        }
+
+        .strength-0 { background: var(--danger-color); width: 20%; }
+        .strength-1 { background: var(--danger-color); width: 40%; }
+        .strength-2 { background: var(--warning-color); width: 60%; }
+        .strength-3 { background: var(--primary-color); width: 80%; }
+        .strength-4 { background: var(--success-color); width: 100%; }
+
+        .password-feedback {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Terms and conditions */
+        .terms-section {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .terms-section label {
+            font-size: 14px;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+
+        /* Responsive design */
+        @media (max-width: 576px) {
+            .signup-container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .logo {
+                width: 140px;
+            }
+        }
+
+        /* Security requirements */
+        .security-requirements {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .requirement {
+            margin-bottom: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .requirement.met {
+            color: var(--success-color);
+        }
+
+        .requirement.unmet {
+            color: var(--danger-color);
+        }
+        
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+            z-index: 5;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Language Switcher */
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .language-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .language-btn:hover {
+            background: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            display: none;
+            z-index: 101;
+        }
+        
+        .language-dropdown.show {
+            display: block;
+        }
+        
+        .language-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .language-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .language-option.active {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .flag-icon {
+            width: 20px;
+            height: 15px;
+            border-radius: 2px;
+        }
+        
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .arabic-font, .sinhala-font, .tamil-font {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+            <button class="language-btn" id="languageToggle">
+                <i class="fas fa-globe"></i>
+                <span id="currentLanguage">English</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="language-dropdown" id="languageDropdown">
+                <div class="language-option active" data-lang="en">
+                    <img src="https://flagcdn.com/w40/gb.png" class="flag-icon" alt="English">
+                    English
+                </div>
+                <div class="language-option" data-lang="si">
+                    <img src="https://flagcdn.com/w40/lk.png" class="flag-icon" alt="Sinhala">
+                    සිංහල
+                </div>
+                <div class="language-option" data-lang="ta">
+                    <img src="https://flagcdn.com/w40/lk.png" class="flag-icon" alt="Tamil">
+                    தமிழ்
+                </div>
+                <div class="language-option" data-lang="es">
+                    <img src="https://flagcdn.com/w40/es.png" class="flag-icon" alt="Spanish">
+                    Español
+                </div>
+                <div class="language-option" data-lang="fr">
+                    <img src="https://flagcdn.com/w40/fr.png" class="flag-icon" alt="French">
+                    Français
+                </div>
+                <div class="language-option" data-lang="de">
+                    <img src="https://flagcdn.com/w40/de.png" class="flag-icon" alt="German">
+                    Deutsch
+                </div>
+                <div class="language-option" data-lang="zh">
+                    <img src="https://flagcdn.com/w40/cn.png" class="flag-icon" alt="Mandarin">
+                    中文
+                </div>
+                <div class="language-option" data-lang="ar">
+                    <img src="https://flagcdn.com/w40/sa.png" class="flag-icon" alt="Arabic">
+                    العربية
+                </div>
+                <div class="language-option" data-lang="ru">
+                    <img src="https://flagcdn.com/w40/ru.png" class="flag-icon" alt="Russian">
+                    Русский
+                </div>
+            </div>
+        </div>
+
+        <img src="https://images.scalebranding.com/technology-h-letter-logo-0bc19ca8-440e-48a4-bd16-cb5a535322ec.jpg" class="logo" alt="OSINT Exposure Tool Logo">
+        <h2 data-i18n="create_account">Create Account</h2>
+        
+        <form id="signupForm" novalidate>
+            <div class="form-group">
+                <label for="username" class="form-label visually-hidden" data-i18n="username">Username</label>
+                <input type="text" id="username" name="username" 
+                       class="form-control" 
+                       placeholder="Choose a username"
+                       required
+                       minlength="3"
+                       maxlength="20"
+                       pattern="[a-zA-Z0-9_]+"
+                       autocomplete="username"
+                       data-i18n-placeholder="choose_username">
+                <div class="invalid-feedback" data-i18n="username_invalid">
+                    Username must be 3-20 characters and contain only letters, numbers, and underscores.
+                </div>
+                <div class="valid-feedback" data-i18n="username_valid">
+                    Username looks good!
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label visually-hidden" data-i18n="email">Email</label>
+                <input type="email" id="email" name="email" 
+                       class="form-control" 
+                       placeholder="Enter your email address"
+                       required
+                       autocomplete="email"
+                       data-i18n-placeholder="enter_email">
+                <div class="invalid-feedback" data-i18n="email_invalid">
+                    Please enter a valid email address.
+                </div>
+                <div class="valid-feedback" data-i18n="email_valid">
+                    Email address looks valid!
+                </div>
+            </div>
+
+            <div class="form-group position-relative">
+                <label for="password" class="form-label visually-hidden" data-i18n="password">Password</label>
+                <input type="password" id="password" name="password" 
+                       class="form-control" 
+                       placeholder="Create a strong password"
+                       required
+                       minlength="8"
+                       autocomplete="new-password"
+                       data-i18n-placeholder="create_password">
+                <span class="password-toggle" style="cursor: pointer;">
+                    <i class="fas fa-eye"></i>
+                </span>
+                
+                <!-- Password strength meter -->
+                <div class="password-strength mt-2">
+                    <div class="password-strength-fill" id="passwordStrengthFill"></div>
+                </div>
+                
+                <div class="password-feedback" id="passwordFeedback"></div>
+                
+                <!-- Password requirements -->
+                <div class="security-requirements mt-2">
+                    <div class="requirement" id="reqLength">
+                        <i class="fas fa-times me-1"></i> <span data-i18n="req_length">At least 8 characters</span>
+                    </div>
+                    <div class="requirement" id="reqLower">
+                        <i class="fas fa-times me-1"></i> <span data-i18n="req_lower">Lowercase letter</span>
+                    </div>
+                    <div class="requirement" id="reqUpper">
+                        <i class="fas fa-times me-1"></i> <span data-i18n="req_upper">Uppercase letter</span>
+                    </div>
+                    <div class="requirement" id="reqNumber">
+                        <i class="fas fa-times me-1"></i> <span data-i18n="req_number">Number</span>
+                    </div>
+                    <div class="requirement" id="reqSpecial">
+                        <i class="fas fa-times me-1"></i> <span data-i18n="req_special">Special character</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword" class="form-label visually-hidden" data-i18n="confirm_password">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" 
+                       class="form-control" 
+                       placeholder="Confirm your password"
+                       required
+                       autocomplete="new-password"
+                       data-i18n-placeholder="confirm_password_placeholder">
+                <div class="invalid-feedback" id="confirmPasswordFeedback" data-i18n="password_mismatch">
+                    Passwords do not match.
+                </div>
+                <div class="valid-feedback" data-i18n="password_match">
+                    Passwords match!
+                </div>
+            </div>
+
+            <!-- Terms and Conditions -->
+            <div class="terms-section">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="terms" required>
+                    <label class="form-check-label" for="terms" data-i18n="terms_agree">
+                        I agree to the <a href="/terms" class="text-primary">Terms of Service</a> 
+                        and <a href="/privacy" class="text-primary">Privacy Policy</a>
+                    </label>
+                    <div class="invalid-feedback" data-i18n="terms_required">
+                        You must agree to the terms and conditions.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="signupButton" disabled>
+                <i class="fas fa-user-plus me-2"></i> 
+                <span id="signupText" data-i18n="create_account_btn">Create Account</span>
+                <div id="signupLoading" class="loading-spinner" style="display: none;"></div>
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">
+                <span data-i18n="have_account">Already have an account?</span> 
+                <a href="/login" class="text-primary fw-bold" data-i18n="sign_in_link">Sign in here</a>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 OSINT Data Exposure Tool v2.0 | 
+               <a href="/privacy" data-i18n="privacy_policy">Privacy Policy</a> | 
+               <a href="/terms" data-i18n="terms_service">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Language translations for signup page
+        const translations = {
+            en: {
+                create_account: "Create Account",
+                username: "Username",
+                choose_username: "Choose a username",
+                email: "Email",
+                enter_email: "Enter your email address",
+                password: "Password",
+                create_password: "Create a strong password",
+                confirm_password: "Confirm Password",
+                confirm_password_placeholder: "Confirm your password",
+                create_account_btn: "Create Account",
+                have_account: "Already have an account?",
+                sign_in_link: "Sign in here",
+                privacy_policy: "Privacy Policy",
+                terms_service: "Terms of Service",
+                username_invalid: "Username must be 3-20 characters and contain only letters, numbers, and underscores.",
+                username_valid: "Username looks good!",
+                email_invalid: "Please enter a valid email address.",
+                email_valid: "Email address looks valid!",
+                password_mismatch: "Passwords do not match.",
+                password_match: "Passwords match!",
+                terms_agree: "I agree to the Terms of Service and Privacy Policy",
+                terms_required: "You must agree to the terms and conditions.",
+                req_length: "At least 8 characters",
+                req_lower: "Lowercase letter",
+                req_upper: "Uppercase letter",
+                req_number: "Number",
+                req_special: "Special character",
+                password_feedback_0: "Very weak password",
+                password_feedback_1: "Weak password",
+                password_feedback_2: "Fair password",
+                password_feedback_3: "Good password",
+                password_feedback_4: "Strong password",
+                password_feedback_5: "Very strong password"
+            },
+            si: {
+                create_account: "ගිණුම සාදන්න",
+                username: "පරිශීලක නාමය",
+                choose_username: "පරිශීලක නාමයක් තෝරන්න",
+                email: "විද්‍යුත් තැපෑල",
+                enter_email: "ඔබගේ විද්‍යුත් ලිපිනය ඇතුළත් කරන්න",
+                password: "මුරපදය",
+                create_password: "ශක්තිමත් මුරපදයක් සාදන්න",
+                confirm_password: "මුරපදය තහවුරු කරන්න",
+                confirm_password_placeholder: "ඔබගේ මුරපදය තහවුරු කරන්න",
+                create_account_btn: "ගිණුම සාදන්න",
+                have_account: "දැනටමත් ගිණුමක් තිබේද?",
+                sign_in_link: "මෙහි පිවිසෙන්න",
+                privacy_policy: "රහස්යතා ප්‍රතිපත්තිය",
+                terms_service: "සේවා නියමයන්",
+                username_invalid: "පරිශීලක නාමය අක්ෂර 3-20ක් විය යුතු අතර අක්ෂර, ඉලක්කම් සහ යටි ඉරි පමණක් අඩංගු විය යුතුය.",
+                username_valid: "පරිශීලක නාමය හොඳයි!",
+                email_invalid: "කරුණාකර වලංගු විද්‍යුත් ලිපිනයක් ඇතුළත් කරන්න.",
+                email_valid: "විද්‍යුත් ලිපිනය වලංගු බව පෙනේ!",
+                password_mismatch: "මුරපද ගැලපෙන්නේ නැත.",
+                password_match: "මුරපද ගැලපේ!",
+                terms_agree: "මම සේවා නියමයන් සහ රහස්‍යතා ප්‍රතිපත්තියට එකඟ වෙමි",
+                terms_required: "ඔබ නියමයන්ට සහ කොන්දේසිවලට එකඟ විය යුතුය.",
+                req_length: "අක්ෂර 8ක් අවම වශයෙන්",
+                req_lower: "පහත් අකුර",
+                req_upper: "ඉහළ අකුර",
+                req_number: "අංකය",
+                req_special: "විශේෂ අක්ෂරය",
+                password_feedback_0: "ඉතා දුර්වල මුරපදය",
+                password_feedback_1: "දුර්වල මුරපදය",
+                password_feedback_2: "සාමාන්‍ය මුරපදය",
+                password_feedback_3: "හොඳ මුරපදය",
+                password_feedback_4: "ශක්තිමත් මුරපදය",
+                password_feedback_5: "ඉතා ශක්තිමත් මුරපදය"
+            },
+            ta: {
+                create_account: "கணக்கை உருவாக்கவும்",
+                username: "பயனர்பெயர்",
+                choose_username: "பயனர்பெயரைத் தேர்ந்தெடுக்கவும்",
+                email: "மின்னஞ்சல்",
+                enter_email: "உங்கள் மின்னஞ்சல் முகவரியை உள்ளிடவும்",
+                password: "கடவுச்சொல்",
+                create_password: "வலுவான கடவுச்சொல்லை உருவாக்கவும்",
+                confirm_password: "கடவுச்சொல்லை உறுதிப்படுத்தவும்",
+                confirm_password_placeholder: "உங்கள் கடவுச்சொல்லை உறுதிப்படுத்தவும்",
+                create_account_btn: "கணக்கை உருவாக்கவும்",
+                have_account: "ஏற்கனவே கணக்கு உள்ளதா?",
+                sign_in_link: "இங்கே உள்நுழைக",
+                privacy_policy: "தனியுரிமைக் கொள்கை",
+                terms_service: "சேவை விதிமுறைகள்",
+                username_invalid: "பயனர்பெயர் 3-20 எழுத்துகள் இருக்க வேண்டும் மற்றும் எழுத்துக்கள், எண்கள் மற்றும் அடிக்கோடுகள் மட்டுமே கொண்டிருக்க வேண்டும்.",
+                username_valid: "பயனர்பெயர் நன்றாக உள்ளது!",
+                email_invalid: "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்.",
+                email_valid: "மின்னஞ்சல் முகவரி சரியானது போல் தெரிகிறது!",
+                password_mismatch: "கடவுச்சொற்கள் பொருந்தவில்லை.",
+                password_match: "கடவுச்சொற்கள் பொருந்துகின்றன!",
+                terms_agree: "நான் சேவை விதிமுறைகள் மற்றும் தனியுரிமைக் கொள்கைக்கு ஒப்புக்கொள்கிறேன்",
+                terms_required: "நீங்கள் விதிமுறைகள் மற்றும் நிபந்தனைகளை ஒப்புக்கொள்ள வேண்டும்.",
+                req_length: "குறைந்தது 8 எழுத்துகள்",
+                req_lower: "சிறிய எழுத்து",
+                req_upper: "பெரிய எழுத்து",
+                req_number: "எண்",
+                req_special: "சிறப்பு எழுத்து",
+                password_feedback_0: "மிகவும் பலவீனமான கடவுச்சொல்",
+                password_feedback_1: "பலவீனமான கடவுச்சொல்",
+                password_feedback_2: "நல்ல கடவுச்சொல்",
+                password_feedback_3: "நன்றான கடவுச்சொல்",
+                password_feedback_4: "வலுவான கடவுச்சொல்",
+                password_feedback_5: "மிகவும் வலுவான கடவுச்சொல்"
+            },
+            es: {
+                create_account: "Crear Cuenta",
+                username: "Nombre de usuario",
+                choose_username: "Elige un nombre de usuario",
+                email: "Correo electrónico",
+                enter_email: "Ingresa tu dirección de correo electrónico",
+                password: "Contraseña",
+                create_password: "Crea una contraseña segura",
+                confirm_password: "Confirmar Contraseña",
+                confirm_password_placeholder: "Confirma tu contraseña",
+                create_account_btn: "Crear Cuenta",
+                have_account: "¿Ya tienes una cuenta?",
+                sign_in_link: "Inicia sesión aquí",
+                privacy_policy: "Política de Privacidad",
+                terms_service: "Términos de Servicio",
+                username_invalid: "El nombre de usuario debe tener entre 3 y 20 caracteres y contener solo letras, números y guiones bajos.",
+                username_valid: "¡El nombre de usuario se ve bien!",
+                email_invalid: "Por favor ingresa una dirección de correo electrónico válida.",
+                email_valid: "¡La dirección de correo electrónico parece válida!",
+                password_mismatch: "Las contraseñas no coinciden.",
+                password_match: "¡Las contraseñas coinciden!",
+                terms_agree: "Acepto los Términos de Servicio y la Política de Privacidad",
+                terms_required: "Debes aceptar los términos y condiciones.",
+                req_length: "Al menos 8 caracteres",
+                req_lower: "Letra minúscula",
+                req_upper: "Letra mayúscula",
+                req_number: "Número",
+                req_special: "Carácter especial",
+                password_feedback_0: "Contraseña muy débil",
+                password_feedback_1: "Contraseña débil",
+                password_feedback_2: "Contraseña aceptable",
+                password_feedback_3: "Buena contraseña",
+                password_feedback_4: "Contraseña fuerte",
+                password_feedback_5: "Contraseña muy fuerte"
+            },
+            fr: {
+                create_account: "Créer un Compte",
+                username: "Nom d'utilisateur",
+                choose_username: "Choisissez un nom d'utilisateur",
+                email: "E-mail",
+                enter_email: "Entrez votre adresse e-mail",
+                password: "Mot de passe",
+                create_password: "Créez un mot de passe fort",
+                confirm_password: "Confirmer le Mot de Passe",
+                confirm_password_placeholder: "Confirmez votre mot de passe",
+                create_account_btn: "Créer un Compte",
+                have_account: "Vous avez déjà un compte?",
+                sign_in_link: "Connectez-vous ici",
+                privacy_policy: "Politique de Confidentialité",
+                terms_service: "Conditions d'Utilisation",
+                username_invalid: "Le nom d'utilisateur doit comporter entre 3 et 20 caractères et ne contenir que des lettres, des chiffres et des traits de soulignement.",
+                username_valid: "Le nom d'utilisateur semble bon!",
+                email_invalid: "Veuillez saisir une adresse e-mail valide.",
+                email_valid: "L'adresse e-mail semble valide!",
+                password_mismatch: "Les mots de passe ne correspondent pas.",
+                password_match: "Les mots de passe correspondent!",
+                terms_agree: "J'accepte les Conditions d'Utilisation et la Politique de Confidentialité",
+                terms_required: "Vous devez accepter les termes et conditions.",
+                req_length: "Au moins 8 caractères",
+                req_lower: "Lettre minuscule",
+                req_upper: "Lettre majuscule",
+                req_number: "Chiffre",
+                req_special: "Caractère spécial",
+                password_feedback_0: "Mot de passe très faible",
+                password_feedback_1: "Mot de passe faible",
+                password_feedback_2: "Mot de passe correct",
+                password_feedback_3: "Bon mot de passe",
+                password_feedback_4: "Mot de passe fort",
+                password_feedback_5: "Mot de passe très fort"
+            },
+            de: {
+                create_account: "Konto Erstellen",
+                username: "Benutzername",
+                choose_username: "Wählen Sie einen Benutzernamen",
+                email: "E-Mail",
+                enter_email: "Geben Sie Ihre E-Mail-Adresse ein",
+                password: "Passwort",
+                create_password: "Erstellen Sie ein sicheres Passwort",
+                confirm_password: "Passwort Bestätigen",
+                confirm_password_placeholder: "Bestätigen Sie Ihr Passwort",
+                create_account_btn: "Konto Erstellen",
+                have_account: "Haben Sie bereits ein Konto?",
+                sign_in_link: "Hier anmelden",
+                privacy_policy: "Datenschutzrichtlinie",
+                terms_service: "Nutzungsbedingungen",
+                username_invalid: "Der Benutzername muss 3-20 Zeichen lang sein und darf nur Buchstaben, Zahlen und Unterstriche enthalten.",
+                username_valid: "Der Benutzername sieht gut aus!",
+                email_invalid: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+                email_valid: "Die E-Mail-Adresse scheint gültig zu sein!",
+                password_mismatch: "Die Passwörter stimmen nicht überein.",
+                password_match: "Die Passwörter stimmen überein!",
+                terms_agree: "Ich stimme den Nutzungsbedingungen und der Datenschutzrichtlinie zu",
+                terms_required: "Sie müssen den Allgemeinen Geschäftsbedingungen zustimmen.",
+                req_length: "Mindestens 8 Zeichen",
+                req_lower: "Kleinbuchstabe",
+                req_upper: "Großbuchstabe",
+                req_number: "Zahl",
+                req_special: "Sonderzeichen",
+                password_feedback_0: "Sehr schwaches Passwort",
+                password_feedback_1: "Schwaches Passwort",
+                password_feedback_2: "Mittelmäßiges Passwort",
+                password_feedback_3: "Gutes Passwort",
+                password_feedback_4: "Starkes Passwort",
+                password_feedback_5: "Sehr starkes Passwort"
+            },
+            zh: {
+                create_account: "创建账户",
+                username: "用户名",
+                choose_username: "选择用户名",
+                email: "电子邮件",
+                enter_email: "输入您的电子邮件地址",
+                password: "密码",
+                create_password: "创建强密码",
+                confirm_password: "确认密码",
+                confirm_password_placeholder: "确认您的密码",
+                create_account_btn: "创建账户",
+                have_account: "已有账户？",
+                sign_in_link: "在此登录",
+                privacy_policy: "隐私政策",
+                terms_service: "服务条款",
+                username_invalid: "用户名必须为3-20个字符，且只能包含字母、数字和下划线。",
+                username_valid: "用户名看起来不错！",
+                email_invalid: "请输入有效的电子邮件地址。",
+                email_valid: "电子邮件地址看起来有效！",
+                password_mismatch: "密码不匹配。",
+                password_match: "密码匹配！",
+                terms_agree: "我同意服务条款和隐私政策",
+                terms_required: "您必须同意条款和条件。",
+                req_length: "至少8个字符",
+                req_lower: "小写字母",
+                req_upper: "大写字母",
+                req_number: "数字",
+                req_special: "特殊字符",
+                password_feedback_0: "非常弱的密码",
+                password_feedback_1: "弱密码",
+                password_feedback_2: "一般密码",
+                password_feedback_3: "好密码",
+                password_feedback_4: "强密码",
+                password_feedback_5: "非常强的密码"
+            },
+            ar: {
+                create_account: "إنشاء حساب",
+                username: "اسم المستخدم",
+                choose_username: "اختر اسم مستخدم",
+                email: "البريد الإلكتروني",
+                enter_email: "أدخل عنوان بريدك الإلكتروني",
+                password: "كلمة المرور",
+                create_password: "أنشئ كلمة مرور قوية",
+                confirm_password: "تأكيد كلمة المرور",
+                confirm_password_placeholder: "قم بتأكيد كلمة المرور الخاصة بك",
+                create_account_btn: "إنشاء حساب",
+                have_account: "هل لديك حساب بالفعل؟",
+                sign_in_link: "سجل الدخول هنا",
+                privacy_policy: "سياسة الخصوصية",
+                terms_service: "شروط الخدمة",
+                username_invalid: "يجب أن يكون اسم المستخدم مكونًا من 3-20 حرفًا ويحتوي على أحرف وأرقام وشرطات سفلية فقط.",
+                username_valid: "اسم المستخدم يبدو جيدًا!",
+                email_invalid: "يرجى إدخال عنوان بريد إلكتروني صالح.",
+                email_valid: "عنوان البريد الإلكتروني يبدو صالحًا!",
+                password_mismatch: "كلمات المرور غير متطابقة.",
+                password_match: "كلمات المرور متطابقة!",
+                terms_agree: "أوافق على شروط الخدمة وسياسة الخصوصية",
+                terms_required: "يجب أن توافق على الشروط والأحكام.",
+                req_length: "8 أحرف على الأقل",
+                req_lower: "حرف صغير",
+                req_upper: "حرف كبير",
+                req_number: "رقم",
+                req_special: "حرف خاص",
+                password_feedback_0: "كلمة مرور ضعيفة جدًا",
+                password_feedback_1: "كلمة مرور ضعيفة",
+                password_feedback_2: "كلمة مرور مقبولة",
+                password_feedback_3: "كلمة مرور جيدة",
+                password_feedback_4: "كلمة مرور قوية",
+                password_feedback_5: "كلمة مرور قوية جدًا"
+            },
+            ru: {
+                create_account: "Создать Аккаунт",
+                username: "Имя пользователя",
+                choose_username: "Выберите имя пользователя",
+                email: "Электронная почта",
+                enter_email: "Введите ваш адрес электронной почты",
+                password: "Пароль",
+                create_password: "Создайте надежный пароль",
+                confirm_password: "Подтвердить Пароль",
+                confirm_password_placeholder: "Подтвердите ваш пароль",
+                create_account_btn: "Создать Аккаунт",
+                have_account: "Уже есть аккаунт?",
+                sign_in_link: "Войдите здесь",
+                privacy_policy: "Политика Конфиденциальности",
+                terms_service: "Условия Обслуживания",
+                username_invalid: "Имя пользователя должно содержать от 3 до 20 символов и состоять только из букв, цифр и подчеркиваний.",
+                username_valid: "Имя пользователя выглядит хорошо!",
+                email_invalid: "Пожалуйста, введите действительный адрес электронной почты.",
+                email_valid: "Адрес электронной почты выглядит действительным!",
+                password_mismatch: "Пароли не совпадают.",
+                password_match: "Пароли совпадают!",
+                terms_agree: "Я согласен с Условиями Обслуживания и Политикой Конфиденциальности",
+                terms_required: "Вы должны согласиться с условиями и положениями.",
+                req_length: "Не менее 8 символов",
+                req_lower: "Строчная буква",
+                req_upper: "Заглавная буква",
+                req_number: "Цифра",
+                req_special: "Специальный символ",
+                password_feedback_0: "Очень слабый пароль",
+                password_feedback_1: "Слабый пароль",
+                password_feedback_2: "Средний пароль",
+                password_feedback_3: "Хороший пароль",
+                password_feedback_4: "Сильный пароль",
+                password_feedback_5: "Очень сильный пароль"
+            }
+        };
+
+// Language management
+        class LanguageManager {
+            constructor() {
+                this.currentLang = localStorage.getItem('preferredLanguage') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.setLanguage(this.currentLang);
+                this.setupLanguageSwitcher();
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('preferredLanguage', lang);
+                
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.getAttribute('data-i18n');
+                    if (translations[lang] && translations[lang][key]) {
+                        element.textContent = translations[lang][key];
+                    }
+                });
+
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-placeholder');
+                    if (translations[lang] && translations[lang][key]) {
+                        element.setAttribute('placeholder', translations[lang][key]);
+                    }
+                });
+
+                const currentLangElement = document.getElementById('currentLanguage');
+                if (currentLangElement) {
+                    const langNames = {
+                        en: 'English',
+                        si: 'සිංහල',
+                        ta: 'தமிழ்',
+                        es: 'Español',
+                        fr: 'Français',
+                        de: 'Deutsch',
+                        zh: '中文',
+                        ar: 'العربية',
+                        ru: 'Русский'
+                    };
+                    currentLangElement.textContent = langNames[lang] || 'English';
+                }
+
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-lang') === lang) {
+                        option.classList.add('active');
+                    }
+                });
+
+                if (lang === 'ar') {
+                    document.body.classList.add('rtl');
+                    document.body.classList.add('arabic-font');
+                } else {
+                    document.body.classList.remove('rtl');
+                    document.body.classList.remove('arabic-font');
+                }
+
+                if (lang === 'si') {
+                    document.body.classList.add('sinhala-font');
+                } else {
+                    document.body.classList.remove('sinhala-font');
+                }
+
+                if (lang === 'ta') {
+                    document.body.classList.add('tamil-font');
+                } else {
+                    document.body.classList.remove('tamil-font');
+                }
+            }
+
+            setupLanguageSwitcher() {
+                const toggle = document.getElementById('languageToggle');
+                const dropdown = document.getElementById('languageDropdown');
+
+                if (toggle && dropdown) {
+                    toggle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('show');
+                    });
+
+                    document.querySelectorAll('.language-option').forEach(option => {
+                        option.addEventListener('click', () => {
+                            const lang = option.getAttribute('data-lang');
+                            this.setLanguage(lang);
+                            dropdown.classList.remove('show');
+                        });
+                    });
+
+                    document.addEventListener('click', () => {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            }
+        }
+
+        class EnhancedSignup {
+            constructor() {
+                this.form = document.getElementById('signupForm');
+                this.passwordField = document.getElementById('password');
+                this.confirmPasswordField = document.getElementById('confirmPassword');
+                this.signupButton = document.getElementById('signupButton');
+                this.requirements = {
+                    length: document.getElementById('reqLength'),
+                    lower: document.getElementById('reqLower'),
+                    upper: document.getElementById('reqUpper'),
+                    number: document.getElementById('reqNumber'),
+                    special: document.getElementById('reqSpecial')
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupFormValidation();
+            }
+
+            setupEventListeners() {
+                document.querySelector('.password-toggle').addEventListener('click', () => {
+                    this.togglePasswordVisibility();
+                });
+
+                this.passwordField.addEventListener('input', () => {
+                    this.validatePassword();
+                    this.checkFormValidity();
+                });
+
+                this.confirmPasswordField.addEventListener('input', () => {
+                    this.validatePasswordConfirmation();
+                    this.checkFormValidity();
+                });
+
+                this.form.addEventListener('submit', (e) => this.handleSignup(e));
+
+                document.getElementById('terms').addEventListener('change', () => {
+                    this.checkFormValidity();
+                });
+            }
+
+            setupFormValidation() {
+                this.form.addEventListener('submit', (event) => {
+                    if (!this.form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    this.form.classList.add('was-validated');
+                }, false);
+            }
+
+            togglePasswordVisibility() {
+                const type = this.passwordField.type === 'password' ? 'text' : 'password';
+                this.passwordField.type = type;
+                this.confirmPasswordField.type = type;
+                
+                const icon = document.querySelector('.password-toggle i');
+                icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+            }
+
+            validatePassword() {
+                const password = this.passwordField.value;
+                const strengthFill = document.getElementById('passwordStrengthFill');
+                const feedback = document.getElementById('passwordFeedback');
+
+                const checks = {
+                    length: password.length >= 8,
+                    lower: /[a-z]/.test(password),
+                    upper: /[A-Z]/.test(password),
+                    number: /\d/.test(password),
+                    special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+                };
+
+                Object.keys(checks).forEach(key => {
+                    const requirement = this.requirements[key];
+                    if (checks[key]) {
+                        requirement.classList.add('met');
+                        requirement.classList.remove('unmet');
+                        requirement.querySelector('i').className = 'fas fa-check me-1';
+                    } else {
+                        requirement.classList.add('unmet');
+                        requirement.classList.remove('met');
+                        requirement.querySelector('i').className = 'fas fa-times me-1';
+                    }
+                });
+
+                const score = Object.values(checks).filter(Boolean).length;
+                strengthFill.className = `password-strength-fill strength-${score}`;
+
+                const currentLang = localStorage.getItem('preferredLanguage') || 'en';
+                const messages = {
+                    0: translations[currentLang].password_feedback_0,
+                    1: translations[currentLang].password_feedback_1,
+                    2: translations[currentLang].password_feedback_2,
+                    3: translations[currentLang].password_feedback_3,
+                    4: translations[currentLang].password_feedback_4,
+                    5: translations[currentLang].password_feedback_5
+                };
+
+                feedback.textContent = messages[score];
+                feedback.className = `password-feedback text-${this.getStrengthColor(score)}`;
+
+                this.passwordField.classList.toggle('is-valid', score >= 3);
+                this.passwordField.classList.toggle('is-invalid', score < 3);
+
+                return score >= 3;
+            }
+
+            getStrengthColor(score) {
+                const colors = ['danger', 'danger', 'warning', 'primary', 'success', 'success'];
+                return colors[score] || 'danger';
+            }
+
+            validatePasswordConfirmation() {
+                const password = this.passwordField.value;
+                const confirmPassword = this.confirmPasswordField.value;
+                const isValid = password === confirmPassword && password.length > 0;
+
+                this.confirmPasswordField.classList.toggle('is-valid', isValid);
+                this.confirmPasswordField.classList.toggle('is-invalid', !isValid);
+
+                return isValid;
+            }
+
+            checkFormValidity() {
+                const isPasswordValid = this.validatePassword();
+                const isConfirmValid = this.validatePasswordConfirmation();
+                const isTermsAccepted = document.getElementById('terms').checked;
+                
+                const username = document.getElementById('username').value.length >= 3;
+                const email = document.getElementById('email').checkValidity();
+
+                this.signupButton.disabled = !(isPasswordValid && isConfirmValid && isTermsAccepted && username && email);
+            }
+
+            async handleSignup(event) {
+                event.preventDefault();
+                
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                this.setLoadingState(true);
+
+                try {
+                    const formData = {
+                        username: document.getElementById('username').value.trim(),
+                        email: document.getElementById('email').value.trim().toLowerCase(),
+                        password: document.getElementById('password').value
+                    };
+
+                    const response = await fetch('/signup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showMessage('Account created successfully! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 2000);
+                    } else {
+                        this.showMessage(data.message || 'Signup failed. Please try again.', 'danger');
+                    }
+
+                } catch (error) {
+                    console.error('Signup error:', error);
+                    this.showMessage('Network error. Please try again.', 'danger');
+                } finally {
+                    this.setLoadingState(false);
+                }
+            }
+
+            validateForm() {
+                let isValid = true;
+                const inputs = this.form.querySelectorAll('input[required]');
+                
+                inputs.forEach(input => {
+                    if (!input.checkValidity()) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                    }
+                });
+
+                return isValid && this.validatePassword() && this.validatePasswordConfirmation();
+            }
+
+            setLoadingState(loading) {
+                const signupText = document.getElementById('signupText');
+                const signupLoading = document.getElementById('signupLoading');
+                
+                if (loading) {
+                    signupText.style.display = 'none';
+                    signupLoading.style.display = 'inline-block';
+                    this.signupButton.disabled = true;
+                } else {
+                    signupText.style.display = 'inline';
+                    signupLoading.style.display = 'none';
+                    this.checkFormValidity();
+                }
+            }
+
+            showMessage(message, type) {
+                const existingAlerts = document.querySelectorAll('.alert');
+                existingAlerts.forEach(alert => alert.remove());
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show mt-3`;
+                alertDiv.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${this.getIcon(type)} me-2"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                this.form.parentNode.insertBefore(alertDiv, this.form.nextSibling);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 5000);
+                }
+            }
+
+            getIcon(type) {
+                const icons = {
+                    'success': 'check-circle',
+                    'danger': 'exclamation-triangle',
+                    'warning': 'exclamation-circle',
+                    'info': 'info-circle'
+                };
+                return icons[type] || 'info-circle';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new LanguageManager();
+            new EnhancedSignup();
+        });
+    </script>
+</body>
+</html>

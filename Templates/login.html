@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - OSINT Data Exposure Assessment v2.0</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent-color: #10b981;
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--background-gradient);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .logo {
+            width: 180px;
+            display: block;
+            margin: 0 auto 30px;
+        }
+
+        h2 {
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 28px;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+
+        .form-control:focus {
+            background-color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 15px;
+            width: 100%;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Password toggle */
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-light);
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        /* Loading animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Security indicators */
+        .security-tips {
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .security-tips h6 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .security-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .security-tips li {
+            margin-bottom: 5px;
+            color: var(--text-light);
+        }
+
+        /* Responsive design */
+        @media (max-width: 576px) {
+            .login-container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            
+            h2 {
+                font-size: 24px;
+            }
+            
+            .logo {
+                width: 140px;
+            }
+        }
+
+        /* Alert enhancements */
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+
+        /* Accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+        
+        /* Language Switcher */
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .language-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .language-btn:hover {
+            background: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 5px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            display: none;
+            z-index: 101;
+        }
+        
+        .language-dropdown.show {
+            display: block;
+        }
+        
+        .language-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .language-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .language-option.active {
+            background-color: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .flag-icon {
+            width: 20px;
+            height: 15px;
+            border-radius: 2px;
+        }
+        
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .arabic-font, .sinhala-font, .tamil-font {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+            <button class="language-btn" id="languageToggle">
+                <i class="fas fa-globe"></i>
+                <span id="currentLanguage">English</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="language-dropdown" id="languageDropdown">
+                <div class="language-option active" data-lang="en">
+                    <img src="https://flagcdn.com/w40/us.png" class="flag-icon" alt="English">
+                    English
+                </div>
+                <div class="language-option" data-lang="si">
+                    <img src="https://flagcdn.com/w40/lk.png" class="flag-icon" alt="Sinhala">
+                    සිංහල
+                </div>
+                <div class="language-option" data-lang="ta">
+                    <img src="https://flagcdn.com/w40/lk.png" class="flag-icon" alt="Tamil">
+                    தமிழ்
+                </div>
+                <div class="language-option" data-lang="es">
+                    <img src="https://flagcdn.com/w40/es.png" class="flag-icon" alt="Spanish">
+                    Español
+                </div>
+                <div class="language-option" data-lang="fr">
+                    <img src="https://flagcdn.com/w40/fr.png" class="flag-icon" alt="French">
+                    Français
+                </div>
+                <div class="language-option" data-lang="de">
+                    <img src="https://flagcdn.com/w40/de.png" class="flag-icon" alt="German">
+                    Deutsch
+                </div>
+                <div class="language-option" data-lang="zh">
+                    <img src="https://flagcdn.com/w40/cn.png" class="flag-icon" alt="Mandarin">
+                    中文
+                </div>
+                <div class="language-option" data-lang="ar">
+                    <img src="https://flagcdn.com/w40/sa.png" class="flag-icon" alt="Arabic">
+                    العربية
+                </div>
+                <div class="language-option" data-lang="ru">
+                    <img src="https://flagcdn.com/w40/ru.png" class="flag-icon" alt="Russian">
+                    Русский
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Flash Messages -->
+        <div id="flashMessages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-triangle{% elif category == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <img src="https://images.scalebranding.com/technology-h-letter-logo-0bc19ca8-440e-48a4-bd16-cb5a535322ec.jpg" class="logo" alt="OSINT Exposure Tool Logo">
+        <h2 data-i18n="secure_login">Secure Login</h2>
+        
+        <form method="POST" action="/login" id="loginForm" novalidate>
+            <div class="form-group">
+                <label for="username" class="form-label visually-hidden" data-i18n="username">Username</label>
+                <input type="text" id="username" name="username" 
+                       class="form-control" 
+                       placeholder="Enter your username"
+                       required
+                       autocomplete="username"
+                       data-i18n-placeholder="enter_username">
+                <div class="invalid-feedback" data-i18n="username_required">
+                    Please enter your username.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label visually-hidden" data-i18n="password">Password</label>
+                <input type="password" id="password" name="password" 
+                       class="form-control" 
+                       placeholder="Enter your password"
+                       required
+                       autocomplete="current-password"
+                       minlength="8"
+                       data-i18n-placeholder="enter_password">
+                <span class="password-toggle" id="passwordToggle">
+                    <i class="fas fa-eye"></i>
+                </span>
+                <div class="invalid-feedback" data-i18n="password_required">
+                    Password must be at least 8 characters long.
+                </div>
+            </div>
+
+            <!-- Security CAPTCHA placeholder -->
+            <div class="mb-3" id="captchaSection" style="display: none;">
+                <div class="captcha-container bg-light p-3 rounded text-center">
+                    <p class="text-dark mb-2" data-i18n="security_verification">Security Verification</p>
+                    <!-- CAPTCHA would be implemented here -->
+                    <div class="bg-secondary text-white p-2 rounded mb-2">
+                        <i class="fas fa-robot me-2"></i><span data-i18n="captcha_placeholder">CAPTCHA Placeholder</span>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Enter verification code" data-i18n-placeholder="enter_verification">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="loginButton">
+                <i class="fas fa-sign-in-alt me-2"></i> 
+                <span id="loginText" data-i18n="sign_in">Sign In</span>
+                <div id="loginLoading" class="loading-spinner" style="display: none;"></div>
+            </button>
+
+            <!-- Enhanced security features -->
+            <div class="security-tips">
+                <h6><i class="fas fa-shield-alt me-2"></i><span data-i18n="security_tips">Security Tips</span></h6>
+                <ul>
+                    <li data-i18n="tip_secure_connection">Ensure you're on a secure connection</li>
+                    <li data-i18n="tip_share_credentials">Never share your credentials</li>
+                    <li data-i18n="tip_public_computers">Log out from public computers</li>
+                    <li data-i18n="tip_2fa">Enable 2FA for enhanced security</li>
+                </ul>
+            </div>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">
+                <span data-i18n="no_account">Don't have an account?</span> 
+                <a href="/signup" class="text-primary fw-bold" data-i18n="create_account">Create one here</a>
+            </p>
+            <p class="small text-muted">
+                <a href="/forgot-password" class="text-muted" data-i18n="forgot_password">Forgot your password?</a>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 OSINT Data Exposure Tool v2.0 | 
+               <a href="/privacy" data-i18n="privacy_policy">Privacy Policy</a> | 
+               <a href="/terms" data-i18n="terms_service">Terms of Service</a>
+            </p>
+            <p class="small text-muted mt-2">
+                <i class="fas fa-lock me-1"></i><span data-i18n="secure_ssl">Secure SSL Connection</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                secure_login: "Secure Login",
+                username: "Username",
+                enter_username: "Enter your username",
+                password: "Password",
+                enter_password: "Enter your password",
+                sign_in: "Sign In",
+                no_account: "Don't have an account?",
+                create_account: "Create one here",
+                forgot_password: "Forgot your password?",
+                security_tips: "Security Tips",
+                tip_secure_connection: "Ensure you're on a secure connection",
+                tip_share_credentials: "Never share your credentials",
+                tip_public_computers: "Log out from public computers",
+                tip_2fa: "Enable 2FA for enhanced security",
+                privacy_policy: "Privacy Policy",
+                terms_service: "Terms of Service",
+                secure_ssl: "Secure SSL Connection",
+                username_required: "Please enter your username.",
+                password_required: "Password must be at least 8 characters long.",
+                security_verification: "Security Verification",
+                captcha_placeholder: "CAPTCHA Placeholder",
+                enter_verification: "Enter verification code"
+            },
+            si: {
+                secure_login: "ආරක්ෂිත පිවිසුම",
+                username: "පරිශීලක නාමය",
+                enter_username: "ඔබගේ පරිශීලක නාමය ඇතුළත් කරන්න",
+                password: "මුරපදය",
+                enter_password: "ඔබගේ මුරපදය ඇතුළත් කරන්න",
+                sign_in: "පිවිසෙන්න",
+                no_account: "ගිණුමක් නැතිද?",
+                create_account: "මෙහි එකක් සාදන්න",
+                forgot_password: "මුරපදය අමතක වුණාද?",
+                security_tips: "ආරක්ෂක ඉඟි",
+                tip_secure_connection: "ඔබ ආරක්ෂිත සම්බන්ධතාවක සිටින බවට වග බලා ගන්න",
+                tip_share_credentials: "කිසිදා ඔබගේ අක්තපත්ර බෙදා නොගන්න",
+                tip_public_computers: "පොදු පරිගණකවලින් පිටවන්න",
+                tip_2fa: "වැඩිදුර ආරක්ෂාව සඳහා 2FA සක්රිය කරන්න",
+                privacy_policy: "රහස්යතා ප්රතිපත්තිය",
+                terms_service: "සේවා නියමයන්",
+                secure_ssl: "ආරක්ෂිත SSL සම්බන්ධතාව",
+                username_required: "කරුණාකර ඔබගේ පරිශීලක නාමය ඇතුළත් කරන්න.",
+                password_required: "මුරපදය අක්ෂර 8කට අඩු නොවිය යුතුය.",
+                security_verification: "ආරක්ෂක සත්‍යාපනය",
+                captcha_placeholder: "CAPTCHA ස්ථානගත කිරීම",
+                enter_verification: "සත්‍යාපන කේතය ඇතුළත් කරන්න"
+            },
+            ta: {
+                secure_login: "பாதுகாப்பான உள்நுழைவு",
+                username: "பயனர் பெயர்",
+                enter_username: "உங்கள் பயனர் பெயரை உள்ளிடவும்",
+                password: "கடவுச்சொல்",
+                enter_password: "உங்கள் கடவுச்சொல்லை உள்ளிடவும்",
+                sign_in: "உள்நுழைக",
+                no_account: "கணக்கு இல்லையா?",
+                create_account: "இங்கே ஒன்றை உருவாக்கவும்",
+                forgot_password: "கடவுச்சொல் மறந்துவிட்டதா?",
+                security_tips: "பாதுகாப்பு உதவிக்குறிப்புகள்",
+                tip_secure_connection: "நீங்கள் பாதுகாப்பான இணைப்பில் இருக்கிறீர்கள் என்பதை உறுதிப்படுத்திக் கொள்ளுங்கள்",
+                tip_share_credentials: "உங்கள் சான்றுகளை ஒருபோதும் பகிரவும் கூடாது",
+                tip_public_computers: "பொது கணினிகளில் இருந்து வெளியேறுங்கள்",
+                tip_2fa: "மேம்பட்ட பாதுகாப்பிற்கு 2FA இயக்கவும்",
+                privacy_policy: "தனியுரிமைக் கொள்கை",
+                terms_service: "சேவை விதிமுறைகள்",
+                secure_ssl: "பாதுகாப்பான SSL இணைப்பு",
+                username_required: "தயவு செய்து உங்கள் பயனர் பெயரை உள்ளிடவும்.",
+                password_required: "கடவுச்சொல் குறைந்தது 8 எழுத்துகள் நீளமாக இருக்க வேண்டும்.",
+                security_verification: "பாதுகாப்பு சரிபார்ப்பு",
+                captcha_placeholder: "CAPTCHA தற்காலிகம்",
+                enter_verification: "சரிபார்ப்புக் குறியீட்டை உள்ளிடவும்"
+            },
+            es: {
+                secure_login: "Inicio de Sesión Seguro",
+                username: "Nombre de usuario",
+                enter_username: "Ingrese su nombre de usuario",
+                password: "Contraseña",
+                enter_password: "Ingrese su contraseña",
+                sign_in: "Iniciar Sesión",
+                no_account: "¿No tienes una cuenta?",
+                create_account: "Crea una aquí",
+                forgot_password: "¿Olvidaste tu contraseña?",
+                security_tips: "Consejos de Seguridad",
+                tip_secure_connection: "Asegúrate de estar en una conexión segura",
+                tip_share_credentials: "Nunca compartas tus credenciales",
+                tip_public_computers: "Cierra sesión en computadoras públicas",
+                tip_2fa: "Habilita 2FA para mayor seguridad",
+                privacy_policy: "Política de Privacidad",
+                terms_service: "Términos de Servicio",
+                secure_ssl: "Conexión SSL Segura",
+                username_required: "Por favor ingrese su nombre de usuario.",
+                password_required: "La contraseña debe tener al menos 8 caracteres.",
+                security_verification: "Verificación de Seguridad",
+                captcha_placeholder: "Marcador de posición CAPTCHA",
+                enter_verification: "Ingrese el código de verificación"
+            },
+            fr: {
+                secure_login: "Connexion Sécurisée",
+                username: "Nom d'utilisateur",
+                enter_username: "Entrez votre nom d'utilisateur",
+                password: "Mot de passe",
+                enter_password: "Entrez votre mot de passe",
+                sign_in: "Se Connecter",
+                no_account: "Vous n'avez pas de compte?",
+                create_account: "Créez-en un ici",
+                forgot_password: "Mot de passe oublié?",
+                security_tips: "Conseils de Sécurité",
+                tip_secure_connection: "Assurez-vous d'être sur une connexion sécurisée",
+                tip_share_credentials: "Ne partagez jamais vos identifiants",
+                tip_public_computers: "Déconnectez-vous des ordinateurs publics",
+                tip_2fa: "Activez la 2FA pour plus de sécurité",
+                privacy_policy: "Politique de Confidentialité",
+                terms_service: "Conditions d'Utilisation",
+                secure_ssl: "Connexion SSL Sécurisée",
+                username_required: "Veuillez saisir votre nom d'utilisateur.",
+                password_required: "Le mot de passe doit comporter au moins 8 caractères.",
+                security_verification: "Vérification de Sécurité",
+                captcha_placeholder: "Espace réservé CAPTCHA",
+                enter_verification: "Entrez le code de vérification"
+            },
+            de: {
+                secure_login: "Sicherer Login",
+                username: "Benutzername",
+                enter_username: "Geben Sie Ihren Benutzernamen ein",
+                password: "Passwort",
+                enter_password: "Geben Sie Ihr Passwort ein",
+                sign_in: "Anmelden",
+                no_account: "Sie haben kein Konto?",
+                create_account: "Hier erstellen",
+                forgot_password: "Passwort vergessen?",
+                security_tips: "Sicherheitstipps",
+                tip_secure_connection: "Stellen Sie sicher, dass Sie eine sichere Verbindung haben",
+                tip_share_credentials: "Geben Sie Ihre Anmeldedaten niemals weiter",
+                tip_public_computers: "Melden Sie sich von öffentlichen Computern ab",
+                tip_2fa: "Aktivieren Sie 2FA für erweiterte Sicherheit",
+                privacy_policy: "Datenschutzrichtlinie",
+                terms_service: "Nutzungsbedingungen",
+                secure_ssl: "Sichere SSL-Verbindung",
+                username_required: "Bitte geben Sie Ihren Benutzernamen ein.",
+                password_required: "Das Passwort muss mindestens 8 Zeichen lang sein.",
+                security_verification: "Sicherheitsüberprüfung",
+                captcha_placeholder: "CAPTCHA-Platzhalter",
+                enter_verification: "Geben Sie den Bestätigungscode ein"
+            },
+            zh: {
+                secure_login: "安全登录",
+                username: "用户名",
+                enter_username: "输入您的用户名",
+                password: "密码",
+                enter_password: "输入您的密码",
+                sign_in: "登录",
+                no_account: "没有账户？",
+                create_account: "在此创建",
+                forgot_password: "忘记密码？",
+                security_tips: "安全提示",
+                tip_secure_connection: "确保您处于安全连接",
+                tip_share_credentials: "切勿分享您的凭据",
+                tip_public_computers: "从公共计算机注销",
+                tip_2fa: "启用双重认证以增强安全性",
+                privacy_policy: "隐私政策",
+                terms_service: "服务条款",
+                secure_ssl: "安全SSL连接",
+                username_required: "请输入您的用户名。",
+                password_required: "密码必须至少8个字符。",
+                security_verification: "安全验证",
+                captcha_placeholder: "验证码占位符",
+                enter_verification: "输入验证码"
+            },
+            ar: {
+                secure_login: "تسجيل الدخول الآمن",
+                username: "اسم المستخدم",
+                enter_username: "أدخل اسم المستخدم الخاص بك",
+                password: "كلمة المرور",
+                enter_password: "أدخل كلمة المرور الخاصة بك",
+                sign_in: "تسجيل الدخول",
+                no_account: "ليس لديك حساب؟",
+                create_account: "أنشئ حسابًا هنا",
+                forgot_password: "نسيت كلمة المرور؟",
+                security_tips: "نصائح أمنية",
+                tip_secure_connection: "تأكد من أنك على اتصال آمن",
+                tip_share_credentials: "لا تشارك بيانات الاعتماد الخاصة بك أبدًا",
+                tip_public_computers: "تسجيل الخروج من أجهزة الكمبيوتر العامة",
+                tip_2fa: "قم بتمكين المصادقة الثنائية 2FA لأمان محسن",
+                privacy_policy: "سياسة الخصوصية",
+                terms_service: "شروط الخدمة",
+                secure_ssl: "اتصال SSL آمن",
+                username_required: "الرجاء إدخال اسم المستخدم الخاص بك.",
+                password_required: "يجب أن تكون كلمة المرور 8 أحرف على الأقل.",
+                security_verification: "التحقق الأمني",
+                captcha_placeholder: "نائب CAPTCHA",
+                enter_verification: "أدخل رمز التحقق"
+            },
+            ru: {
+                secure_login: "Безопасный Вход",
+                username: "Имя пользователя",
+                enter_username: "Введите ваше имя пользователя",
+                password: "Пароль",
+                enter_password: "Введите ваш пароль",
+                sign_in: "Войти",
+                no_account: "Нет учетной записи?",
+                create_account: "Создайте здесь",
+                forgot_password: "Забыли пароль?",
+                security_tips: "Советы по Безопасности",
+                tip_secure_connection: "Убедитесь, что вы используете безопасное соединение",
+                tip_share_credentials: "Никогда не передавайте свои учетные данные",
+                tip_public_computers: "Выходите с общественных компьютеров",
+                tip_2fa: "Включите двухфакторную аутентификацию для повышенной безопасности",
+                privacy_policy: "Политика Конфиденциальности",
+                terms_service: "Условия Обслуживания",
+                secure_ssl: "Безопасное SSL-соединение",
+                username_required: "Пожалуйста, введите ваше имя пользователя.",
+                password_required: "Пароль должен быть не менее 8 символов.",
+                security_verification: "Проверка Безопасности",
+                captcha_placeholder: "Заполнитель CAPTCHA",
+                enter_verification: "Введите код проверки"
+            }
+        };
+
+        // Language management
+        class LanguageManager {
+            constructor() {
+                this.currentLang = localStorage.getItem('preferredLanguage') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.setLanguage(this.currentLang);
+                this.setupLanguageSwitcher();
+            }
+
+            setLanguage(lang) {
+                this.currentLang = lang;
+                localStorage.setItem('preferredLanguage', lang);
+                
+                document.querySelectorAll('[data-i18n]').forEach(element => {
+                    const key = element.getAttribute('data-i18n');
+                    if (translations[lang] && translations[lang][key]) {
+                        element.textContent = translations[lang][key];
+                    }
+                });
+
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
+                    const key = element.getAttribute('data-i18n-placeholder');
+                    if (translations[lang] && translations[lang][key]) {
+                        element.setAttribute('placeholder', translations[lang][key]);
+                    }
+                });
+
+                const currentLangElement = document.getElementById('currentLanguage');
+                if (currentLangElement) {
+                    const langNames = {
+                        en: 'English',
+                        si: 'සිංහල',
+                        ta: 'தமிழ்',
+                        es: 'Español',
+                        fr: 'Français',
+                        de: 'Deutsch',
+                        zh: '中文',
+                        ar: 'العربية',
+                        ru: 'Русский'
+                    };
+                    currentLangElement.textContent = langNames[lang] || 'English';
+                }
+
+                document.querySelectorAll('.language-option').forEach(option => {
+                    option.classList.remove('active');
+                    if (option.getAttribute('data-lang') === lang) {
+                        option.classList.add('active');
+                    }
+                });
+
+                if (lang === 'ar') {
+                    document.body.classList.add('rtl');
+                    document.body.classList.add('arabic-font');
+                } else {
+                    document.body.classList.remove('rtl');
+                    document.body.classList.remove('arabic-font');
+                }
+
+                if (lang === 'si') {
+                    document.body.classList.add('sinhala-font');
+                } else {
+                    document.body.classList.remove('sinhala-font');
+                }
+
+                if (lang === 'ta') {
+                    document.body.classList.add('tamil-font');
+                } else {
+                    document.body.classList.remove('tamil-font');
+                }
+            }
+
+            setupLanguageSwitcher() {
+                const toggle = document.getElementById('languageToggle');
+                const dropdown = document.getElementById('languageDropdown');
+
+                if (toggle && dropdown) {
+                    toggle.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('show');
+                    });
+
+                    document.querySelectorAll('.language-option').forEach(option => {
+                        option.addEventListener('click', () => {
+                            const lang = option.getAttribute('data-lang');
+                            this.setLanguage(lang);
+                            dropdown.classList.remove('show');
+                        });
+                    });
+
+                    document.addEventListener('click', () => {
+                        dropdown.classList.remove('show');
+                    });
+                }
+            }
+        }
+
+        class EnhancedLogin {
+            constructor() {
+                this.form = document.getElementById('loginForm');
+                this.passwordToggle = document.getElementById('passwordToggle');
+                this.passwordField = document.getElementById('password');
+                this.loginButton = document.getElementById('loginButton');
+                this.loginText = document.getElementById('loginText');
+                this.loginLoading = document.getElementById('loginLoading');
+                this.failedAttempts = 0;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupFormValidation();
+            }
+
+            setupEventListeners() {
+                this.passwordToggle.addEventListener('click', () => this.togglePasswordVisibility());
+                
+                this.form.addEventListener('submit', (e) => this.handleLogin(e));
+                
+                this.form.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('blur', () => this.validateField(input));
+                });
+            }
+
+            setupFormValidation() {
+                this.form.addEventListener('submit', (event) => {
+                    if (!this.form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    this.form.classList.add('was-validated');
+                }, false);
+            }
+
+            togglePasswordVisibility() {
+                const type = this.passwordField.type === 'password' ? 'text' : 'password';
+                this.passwordField.type = type;
+                
+                const icon = this.passwordToggle.querySelector('i');
+                icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+                
+                this.passwordField.setAttribute('aria-describedby', 
+                    type === 'password' ? 'passwordHidden' : 'passwordVisible');
+            }
+
+            async handleLogin(event) {
+                event.preventDefault();
+                
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                this.setLoadingState(true);
+
+                try {
+                    const formData = {
+                        username: document.getElementById('username').value.trim(),
+                        password: document.getElementById('password').value
+                    };
+
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showMessage('Login successful! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard';
+                        }, 1000);
+                    } else {
+                        this.failedAttempts++;
+                        this.handleFailedLogin();
+                        this.showMessage(data.message || 'Invalid credentials', 'danger');
+                    }
+
+                } catch (error) {
+                    console.error('Login error:', error);
+                    this.showMessage('Network error. Please try again.', 'danger');
+                } finally {
+                    this.setLoadingState(false);
+                }
+            }
+
+            validateForm() {
+                let isValid = true;
+                const inputs = this.form.querySelectorAll('input[required]');
+                
+                inputs.forEach(input => {
+                    if (!this.validateField(input)) {
+                        isValid = false;
+                    }
+                });
+
+                return isValid;
+            }
+
+            validateField(field) {
+                const value = field.value.trim();
+                let isValid = true;
+
+                switch(field.type) {
+                    case 'text':
+                        isValid = value.length >= 3;
+                        break;
+                    case 'password':
+                        isValid = value.length >= 8;
+                        break;
+                }
+
+                if (isValid) {
+                    field.classList.remove('is-invalid');
+                    field.classList.add('is-valid');
+                } else {
+                    field.classList.remove('is-valid');
+                    field.classList.add('is-invalid');
+                }
+
+                return isValid;
+            }
+
+            handleFailedLogin() {
+                if (this.failedAttempts >= 3) {
+                    document.getElementById('captchaSection').style.display = 'block';
+                }
+                
+                this.form.classList.add('shake');
+                setTimeout(() => this.form.classList.remove('shake'), 500);
+            }
+
+            setLoadingState(loading) {
+                if (loading) {
+                    this.loginText.style.display = 'none';
+                    this.loginLoading.style.display = 'inline-block';
+                    this.loginButton.disabled = true;
+                } else {
+                    this.loginText.style.display = 'inline';
+                    this.loginLoading.style.display = 'none';
+                    this.loginButton.disabled = false;
+                }
+            }
+
+            showMessage(message, type) {
+                const existingAlerts = document.querySelectorAll('.alert-dismissible');
+                existingAlerts.forEach(alert => alert.remove());
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${this.getIcon(type)} me-2"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                document.getElementById('flashMessages').appendChild(alertDiv);
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 3000);
+                }
+            }
+
+            getIcon(type) {
+                const icons = {
+                    'success': 'check-circle',
+                    'danger': 'exclamation-triangle',
+                    'warning': 'exclamation-circle',
+                    'info': 'info-circle'
+                };
+                return icons[type] || 'info-circle';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new LanguageManager();
+            new EnhancedLogin();
+        });
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+            .shake {
+                animation: shake 0.5s ease-in-out;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
